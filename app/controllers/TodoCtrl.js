@@ -5,7 +5,6 @@ app.controller("TodoCtrl", function($scope, $location) {
    $scope.welcome = "hello";
    $scope.showListView = true;
 
-
    $scope.newItem = function() {
       console.log("you clicked on the new item btn");
       $scope.showListView = false;

@@ -1,24 +1,69 @@
 "use strict";
 
-var app = angular.module("TodoApp", ["ngRoute"])
-.constant('FirebaseURL', "https://angularstarter-f52e6.firebaseio.com");
-// Above = original definition of database url
+var app = angular.module("TodoApp", ["ngRoute"]);
 
-app.config(function($routeProvider) {
+let isAuth = (AuthFactory) => new Promise ( (resolve, reject) => {
+  // console.log("running isAuth");
+    AuthFactory.isAuthenticated()
+    .then ( (userExists) => {
+    console.log("userExists", userExists);
+        if (userExists){
+      console.log("Authenticated, go ahead.");
+            resolve();
+        }else {
+      console.log("Authentication rejected, go away.");
+            reject();
+        }
+    });
+});
+
+app.config( function($routeProvider) {
    $routeProvider.
+   when('/', {
+      templateUrl: 'partials/login.html',
+      controller: "UserCtrl"
+   }).
+   when('/login', {
+      templateUrl: 'partials/login.html',
+      controller: "UserCtrl"
+   }).
+   when('/logout', {
+      templateUrl: 'partials/login.html',
+      controller: "UserCtrl"
+   }).
    when('/items/list', {
       templateUrl: "partials/item-list.html",
-      controller: "ItemListCtrl"
+      controller: "ItemListCtrl",
+      resolve: {isAuth}
    }).
    when('/items/new', {
       templateUrl: "partials/item-form.html",
-      controller: "ItemNewCtrl"
+      controller: "ItemNewCtrl",
+      resolve: {isAuth}
    }).
    when('/items/:itemId', {
       templateUrl: "partials/item-details.html",
-      controller: "ItemViewCtrl"
+      controller: "ItemViewCtrl",
+      resolve: {isAuth}
    }).
-   otherwise('/items/list');
+   when('/items/:itemId/edit', {
+      templateUrl: "partials/item-form.html",
+      controller: "ItemEditCtrl",
+      resolve: {isAuth}
+   }).
+   otherwise('/'); // Send to blank page as fallback (like an 'else' stmt)
+});
+
+//run when the app loads
+app.run(($location, FBCreds) => {
+   let creds = FBCreds;
+   let authConfig = {
+      apiKey: creds.apiKey,
+      authDomain: creds.authDomain,
+      databaseURL: creds.databaseURL
+   };
+
+   firebase.initializeApp(authConfig);
 });
 
 
